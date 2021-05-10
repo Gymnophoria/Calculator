@@ -93,8 +93,29 @@ calcNext:
 
 getNum:
 
+    mov r10b, 0 ; "is negative" flag
+    mov r11b, byte [location] ; store location in case
+
+    getNumStart:
     movzx rcx, byte [location] ; get current location --> rcx
     movzx r9, byte [input + rcx] ; get byte at location
+
+    cmp r9b, '-' ; check if negative number
+    jne notNegative
+
+    inc byte [location]
+
+    cmp r10b, 0  ; check if set to negative
+    je makeNegative
+
+    mov r10b, 0  ; if set to negative, make not set
+    jmp getNumStart
+
+    makeNegative: ; if not set to negative, set to negative
+    mov r10b, 1
+    jmp getNumStart
+
+    notNegative:
 
     cmp r9b, '0' ; check byte is '0' ≤ x ≤ '9'
     jb noNum
@@ -124,12 +145,20 @@ getNum:
     jmp loopNum ; restart loop
 
     noNum:
-    mov rax, qword [lastResult] ; use last result (or 0) as number
+    mov rax, qword [lastResult] ; use last result (or default 0) as number
+    mov byte [location], r11b   ; reset location to what it was when entering function
+
     jmp endNum
 
     doneNum:
     mov rax, r8
     mov byte [location], cl ; store updated location
+
+    cmp r10b, 1     ; check if negative number
+    jne endNum
+
+    not rax         ; take two's complement if negative
+    inc rax
 
     endNum:
 
@@ -191,12 +220,13 @@ getOperator:
     cmp al, '%'
     je validOperator
 
-    mov rax, 0
-
     mov rdi, operatorMsg
     movzx rsi, byte [operatorLen]
     call printText
     call printEndl
+    call printEndl
+
+    mov rax, 0
 
     validOperator:
     mov byte [op], al
@@ -228,23 +258,23 @@ calculate:
     jne endMul
 
     mov rax, qword [left]
-    mul qword [right]
+    imul qword [right]
 
     endMul:
     cmp byte [op], '/'
     jne endDiv
 
-    xor rdx, rdx
     mov rax, qword [left]
-    div qword [right]
+    cqo
+    idiv qword [right]
 
     endDiv:
     cmp byte [op], '%'
     jne endMod
 
-    xor rdx, rdx
     mov rax, qword [left]
-    div qword [right]
+    cqo
+    idiv qword [right]
     mov rax, rdx
 
     endMod:

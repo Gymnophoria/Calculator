@@ -24,6 +24,7 @@ global printText
 global printChar
 global printEndl
 global stringify
+global flushBuffer
 
 
 getText:
@@ -93,49 +94,21 @@ printEndl:
 
 
 
-getLength:
-    ; input address = rdi
-    ; input max length = rsi
-
-    mov rcx, 0
-
-    nextCompare:
-    mov r8b, byte [rdi + rcx] ; get current char
-
-    cmp r8b, 0xA    ; check if current char = \n
-    je doneLength   ; if equal, reached end of string
-
-    inc rcx         ; if not equal, count as character
-    cmp rcx, rsi    ; check if reached max length
-    jbe nextCompare ; if below max length, keep comparing
-
-    doneLength:
-
-    mov rax, rcx ; return determined length
-
-    ret
-
-
-
-
-
-
 stringify:
     ; input address = rdi
     ; input number = rsi
     ; return value: length of string
 
     mov rcx, 0
+    mov r10b, 0
 
-    ;cmp rsi, 0
-    ;jl addSign
-    ;jmp skipSign
+    cmp rsi, 0  ; skip to loop if not negative
+    jge stringLoop
 
-    ;addSign:
-    ;mov byte [rdi + rcx], '-'
-    ;inc rcx
+    mov r10b, 1 ; set negative flag for later
 
-    ;skipSign:
+    not rsi ; convert to positive
+    inc rsi
 
     stringLoop:
     mov rax, rsi ; move number into rax
@@ -147,13 +120,21 @@ stringify:
     mov byte [rdi + rcx], dl ; move ASCII value to input array at correct offset
 
     cmp rax, 0   ; check if done dividing (res = 0)
-    je stringReverse
+    je endStringLoop
 
     mov rsi, rax ; update number
     inc rcx      ; move to next num
     jmp stringLoop
 
-    stringReverse: ; time to reverse the string!
+    endStringLoop: ; time to reverse the string!
+    cmp r10b, 1 ; check if negative
+    jne stringReverse
+
+    inc rcx
+    mov byte [rdi + rcx], '-' ; add negative sign at end
+
+    stringReverse:
+
     mov r8, rdi
     add r8, rcx ; end/swap location
     

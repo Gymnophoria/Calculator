@@ -1,0 +1,12 @@
+
+# ignore files with no extension (compiled executables)
+*
+!*/
+!*.*
+
+# macOS
+*DS_Store
+
+# extra compiler schtuff
+*.o
+*.lst

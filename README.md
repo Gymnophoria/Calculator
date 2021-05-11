@@ -3,7 +3,7 @@ A basic x86-64 CLI-based assembly calculator for Linux.
 
 Tested on Ubuntu 18.04 LTS; probably works for most versions of Linux. Created as the course project for SRJC's CS 12 (Assembly) class in the Spring 2021 term.
 
-To compile, simply `make main` and then run from terminal with `./main`. The Makefile is set up for yasm and ld.
+To compile, simply `make calculator` and then run from terminal with `./calculator`. The Makefile is set up for yasm and ld.
 
 ## Features
  - Five operations supported:

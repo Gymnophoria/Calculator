@@ -36,11 +36,10 @@ location resb   1
 ; Code
 section  .text
 
-; declare functions
-global startCalculator
+global _start
 
 
-startCalculator:
+_start:
 
     mov rdi, welcomeMsg
     movzx rsi, byte [welcomeLen]

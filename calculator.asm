@@ -62,11 +62,9 @@ calcNext:
     jne leftSuccess
 
     mov rax, qword [lastResult] ; use last result (or default 0) as number if not successful
-    jmp leftFail
 
     leftSuccess:
     mov qword [left], rax ; store left hand number
-    leftFail:
 
     call skipWhitespace ; skip over whitespace
 
@@ -257,6 +255,7 @@ getOperator: ; return val of 0 = invalid; 1 = \n
 
     validOperator:
     mov byte [op], al
+    movzx rax, al ; fill out top of return value with 0's
 
     endOperator:
 

@@ -58,14 +58,16 @@ calcNext:
     call skipWhitespace ; skip over whitespace
 
     call getOperator
-    cmp rax, 0
-    je calcNext     ; if invalid operator input, retry input
+    cmp rax, 1
+    jb calcNext     ; if invalid operator input (0), retry input
+    je skipRight    ; if operator = \n, skip right hand collection
 
     call skipWhitespace
 
     call getNum
     mov qword [right], rax ; store right hand number
 
+    skipRight:
     call calculate ; calculate with left/right/op
     mov qword [lastResult], rax
 
@@ -182,9 +184,6 @@ skipWhitespace:
 
     mov al, byte [input + rcx] ; get byte at current location
 
-    cmp al, 0xA
-    je whitespaceLoop
-
     cmp al, ' '
     je whitespaceLoop
 
@@ -199,7 +198,7 @@ skipWhitespace:
 
 
 
-getOperator:
+getOperator: ; return val of 0 = invalid; 1 = \n
 
     movzx rcx, byte [location]
     mov al, byte [input + rcx]
@@ -220,6 +219,9 @@ getOperator:
     cmp al, '%'
     je validOperator
 
+    cmp al, 0xA
+    je endlOperator
+
     mov rdi, operatorMsg
     movzx rsi, byte [operatorLen]
     call printText
@@ -228,8 +230,17 @@ getOperator:
 
     mov rax, 0
 
+    jmp endOperator
+
+    endlOperator:
+    mov rax, 1
+    mov byte [op], 0xA
+    jmp endOperator
+
     validOperator:
     mov byte [op], al
+
+    endOperator:
 
     ret
 
@@ -278,4 +289,11 @@ calculate:
     mov rax, rdx
 
     endMod:
+    cmp byte [op], 0xA ; endl
+    jne endEndl
+
+    mov rax, qword [left]
+
+    endEndl:
+
     ret

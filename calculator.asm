@@ -13,6 +13,9 @@ welcomeLen  db  88
 operatorMsg db  "Invalid operator. You can use + - / * %. Please try again."
 operatorLen db  58
 
+rightMsg    db  "Please enter a right-hand number."
+rightLen    db  33
+
 resultMsg   db  "--> "
 resultLen   db  4
 
@@ -42,10 +45,11 @@ startCalculator:
     mov rdi, welcomeMsg
     movzx rsi, byte [welcomeLen]
     call printText
-    call printEndl
-    call printEndl
 
 calcNext:
+
+    call printEndl
+    call printEndl
 
     mov rdi, input
     mov rsi, 0x80
@@ -53,18 +57,38 @@ calcNext:
 
     mov byte [location], 0
     call getNum
+    
+    cmp dil, 0 ; success return val from getNum
+    jne leftSuccess
+
+    mov rax, qword [lastResult] ; use last result (or default 0) as number if not successful
+    jmp leftFail
+
+    leftSuccess:
     mov qword [left], rax ; store left hand number
+    leftFail:
 
     call skipWhitespace ; skip over whitespace
 
     call getOperator
-    cmp rax, 1
+    cmp rax, 0xA
     jb calcNext     ; if invalid operator input (0), retry input
     je skipRight    ; if operator = \n, skip right hand collection
 
     call skipWhitespace
 
     call getNum
+
+    cmp dil, 0
+    jne rightSuccess
+
+    mov rdi, rightMsg           ; ask user to input right-hand number
+    movzx rsi, byte [rightLen]
+    call printText
+
+    jmp calcNext    ; retry expression
+
+    rightSuccess:
     mov qword [right], rax ; store right hand number
 
     skipRight:
@@ -82,8 +106,6 @@ calcNext:
     mov rdi, output
     mov rsi, rax   ; return value from stringify; length of string
     call printText
-    call printEndl
-    call printEndl
 
     jmp calcNext
 
@@ -93,7 +115,7 @@ calcNext:
 
 
 
-getNum:
+getNum: ; custom calling convention! num returned in rax, success (bool) returned in dil
 
     mov r10b, 0 ; "is negative" flag
     mov r11b, byte [location] ; store location in case
@@ -147,14 +169,17 @@ getNum:
     jmp loopNum ; restart loop
 
     noNum:
-    mov rax, qword [lastResult] ; use last result (or default 0) as number
     mov byte [location], r11b   ; reset location to what it was when entering function
+
+    mov dil, 0  ; success = false
 
     jmp endNum
 
     doneNum:
     mov rax, r8
     mov byte [location], cl ; store updated location
+
+    mov dil, 1   ; success = true
 
     cmp r10b, 1     ; check if negative number
     jne endNum
@@ -220,21 +245,14 @@ getOperator: ; return val of 0 = invalid; 1 = \n
     je validOperator
 
     cmp al, 0xA
-    je endlOperator
+    je validOperator
 
     mov rdi, operatorMsg
     movzx rsi, byte [operatorLen]
     call printText
-    call printEndl
-    call printEndl
 
     mov rax, 0
 
-    jmp endOperator
-
-    endlOperator:
-    mov rax, 1
-    mov byte [op], 0xA
     jmp endOperator
 
     validOperator:

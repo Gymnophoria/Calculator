@@ -4,6 +4,9 @@
 !*/
 !*.*
 
+# not the Makefile though
+!Makefile
+
 # macOS
 *DS_Store
 

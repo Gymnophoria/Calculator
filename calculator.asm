@@ -241,6 +241,9 @@ getOperator: ; return val of 0 = invalid; 1 = \n
     cmp al, '%'
     je validOperator
 
+    cmp al, '^'
+    je validOperator
+
     cmp al, 0xA
     je validOperator
 
@@ -270,46 +273,81 @@ calculate:
     cmp byte [op], '+'
     jne endAdd
 
-    mov rax, qword [left]
-    add rax, qword [right]
+        mov rax, qword [left]
+        add rax, qword [right]
+
+        jmp endCalc
 
     endAdd:
     cmp byte [op], '-'
     jne endSub
 
-    mov rax, qword [left]
-    sub rax, qword [right]
+        mov rax, qword [left]
+        sub rax, qword [right]
+
+        jmp endCalc
 
     endSub:
     cmp byte [op], '*'
     jne endMul
 
-    mov rax, qword [left]
-    imul qword [right]
+        mov rax, qword [left]
+        imul qword [right]
+
+        jmp endCalc
 
     endMul:
     cmp byte [op], '/'
     jne endDiv
 
-    mov rax, qword [left]
-    cqo
-    idiv qword [right]
+        mov rax, qword [left]
+        cqo
+        idiv qword [right]
+
+        jmp endCalc
 
     endDiv:
     cmp byte [op], '%'
     jne endMod
 
-    mov rax, qword [left]
-    cqo
-    idiv qword [right]
-    mov rax, rdx
+        mov rax, qword [left]
+        cqo
+        idiv qword [right]
+        mov rax, rdx
+
+        jmp endCalc
 
     endMod:
     cmp byte [op], 0xA ; endl
     jne endEndl
 
-    mov rax, qword [left]
+        mov rax, qword [left]
+
+        jmp endCalc
 
     endEndl:
+    cmp byte [op], '^'
+    jne endPow
+
+        mov r8b, 0 ; not negative
+        mov rax, qword [left]
+        mov rcx, qword [right]
+
+        cmp rcx, 0 ; check if pow = 0
+        jne powLoop
+
+        mov rax, 1
+        jmp endCalc
+
+        powLoop:
+        dec rcx
+        cmp rcx, 0
+        je endCalc
+
+        imul qword [left]
+        jmp powLoop
+
+    endPow:
+    endCalc:
 
     ret

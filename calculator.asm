@@ -7,8 +7,8 @@ extern printChar
 extern printEndl
 extern stringify
 
-welcomeMsg  db  "Welcome to Nik's assembly calculator! Enter an expression to evaluate. Supported operations are + - / * % ^. Ctrl + C to quit."
-welcomeLen  db  88
+welcomeMsg  db  "Welcome to Nik's assembly calculator! Enter an expression to evaluate. Ctrl + C to quit. Supported operations are + - / * % ^."
+welcomeLen  db  126
 
 operatorMsg db  "Invalid operator. You can use + - / * % ^. Please try again."
 operatorLen db  58

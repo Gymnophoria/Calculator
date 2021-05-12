@@ -7,14 +7,23 @@ extern printChar
 extern printEndl
 extern stringify
 
-welcomeMsg  db  "Welcome to Nik's assembly calculator! Enter an expression to evaluate. Ctrl + C to quit."
+welcomeMsg  db  "Welcome to Nik's assembly calculator! Enter an expression to evaluate. Supported operations are + - / * % ^. Ctrl + C to quit."
 welcomeLen  db  88
 
-operatorMsg db  "Invalid operator. You can use + - / * %. Please try again."
+operatorMsg db  "Invalid operator. You can use + - / * % ^. Please try again."
 operatorLen db  58
 
 rightMsg    db  "Please enter a right-hand number."
 rightLen    db  33
+
+div0Msg     db  "Error: cannot divide by zero."
+div0Len     db  29
+
+powNegMsg   db  "Error: negative powers are not supported."
+powNegLen   db  41
+
+pow00Msg    db  "--> Undefined, or 1"
+pow00Len    db  19
 
 resultMsg   db  "--> "
 resultLen   db  4
@@ -89,6 +98,10 @@ calcNext:
     mov qword [right], rax ; store right hand number
 
     skipRight:
+    call validateInput
+    cmp rax, 0
+    jne calcNext
+
     call calculate ; calculate with left/right/op
     mov qword [lastResult], rax
 
@@ -260,6 +273,62 @@ getOperator: ; return val of 0 = invalid; 1 = \n
     movzx rax, al ; fill out top of return value with 0's
 
     endOperator:
+
+    ret
+
+
+
+
+
+
+validateInput:
+
+    mov rax, 0 ; assume OK, set to 1 if not
+
+    mov r8, qword [left]
+    mov r9, qword [right]
+
+    cmp byte [op], '/' ; check for div 0
+    jne endDivVal
+
+        cmp qword [right], 0
+        jne endValidate
+
+        mov rdi, div0Msg
+        movzx rsi, byte [div0Len]
+        call printText
+
+        mov rax, 1
+        jmp endValidate
+
+    endDivVal:
+    cmp byte [op], '^' ; check for 0^0
+    jne endPowVal
+
+        cmp qword [right], 0
+        jge checkPow00
+
+        mov rdi, powNegMsg
+        movzx rsi, byte [powNegLen]
+        call printText
+
+        jmp endValidate
+
+        checkPow00:
+
+        jne endValidate ; based off of cmp right to 0 from above
+        cmp qword [left], 0
+        jne endValidate
+
+        mov rdi, pow00Msg
+        movzx rsi, byte [pow00Len]
+        call printText
+
+        mov rax, 1
+        jmp endValidate
+
+    endPowVal:
+    endValidate:
 
     ret
 

@@ -6,13 +6,14 @@ Tested on Ubuntu 18.04 LTS; probably works for most versions of Linux. Created a
 To compile, simply `make calculator` and then run from terminal with `./calculator`. The Makefile is set up for yasm and ld.
 
 ## Features
- - Five operations supported:
+ - Six operations supported:
    - Addition (+)
    - Subtraction (-)
    - Multiplication (*)
    - Division (/)
    - Modulus (%)
- - Answer rollover (e.g. operations based on previous answer)
+   - Power (^)
+ - Answer rollover (i.e. operations based on previous answer)
  - Negative/positive support
  - Input validation
 
@@ -24,4 +25,5 @@ To compile, simply `make calculator` and then run from terminal with `./calculat
    - No decimals will be provided in results
    - Integers *will* overflow without warning
    - Numbers may be truncated
+ - Negative exponents are not supported (simply because decimals/fractions are not supported)
  - Complex equations (i.e. more than two numbers) are not supported
